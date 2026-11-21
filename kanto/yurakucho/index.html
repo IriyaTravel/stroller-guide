@@ -121,6 +121,28 @@ function detailLinkIn(lid, code) {
   const href = (lid === DATA.lid ? '' : '../' + lid + '/') + s.station_id + '.html';
   return ' <a class="dlink" href="' + href + '">駅の詳細</a>';
 }
+function exitHtml(st, d) {
+  const legs = st.hist.concat([{ lid: DATA.lid, from: st.from, to: st.to }]);
+  let sum = '<h2>経路</h2>';
+  legs.forEach((leg, i) => {
+    if (i > 0) {
+      const prev = legs[i - 1];
+      sum += (nameIn(leg.lid, leg.from) === nameIn(prev.lid, prev.to))
+        ? '<p>↓ ' + nameIn(leg.lid, leg.from) + '駅で乗り換え</p>'
+        : '<p>↓ ' + nameIn(leg.lid, leg.from) + '駅へ徒歩乗り継ぎ</p>';
+    }
+    sum += '<p><strong>' + DATA.all[leg.lid].display + ' ' + nameIn(leg.lid, leg.from) + ' → ' + nameIn(leg.lid, leg.to) + '</strong><br>'
+      + '乗る: ' + boardingIn(leg.lid, leg.from, leg.to) + detailLinkIn(leg.lid, leg.from) + '<br>'
+      + '降りる: ' + boardingIn(leg.lid, leg.to, leg.from) + detailLinkIn(leg.lid, leg.to)
+      + (DATA.fleetByLine[leg.lid] ? '<br>フリースペース: ' + DATA.fleetByLine[leg.lid] : '') + '</p>';
+  });
+  const exits = d.exits.length ? d.exits.map(e => e + '番出入口').join('・') : 'エレベーター専用口のみ';
+  return sum
+    + '<h2>' + nameOf(st.to) + '駅で出る</h2><p>改札内: ' + (d.ev_in.join('／') || 'なし') + '<br>'
+    + '改札外: ' + (d.ev_out.join('／') || 'なし') + '<br>'
+    + 'エレベーターのある出入口: ' + exits + '</p>'
+    + navRow(st);
+}
 function render() {
   const st = parseHash();
   let html = '';
@@ -136,32 +158,13 @@ function render() {
   } else {
     const d = detailsOf(st.to);
     const hasXfer = (d.t_same || d.t_walk || d.xfer_same.length || d.xfer_walk.length);
-    if (!st.branch) {
+    if (!st.branch && hasXfer) {
       html += '<h2>' + nameOf(st.to) + '駅では</h2><div class="step">'
-        + '<a href="' + curHash(st, st.from + '-' + st.to + '-exit') + '">出る</a>';
-      if (hasXfer) html += '<a href="' + curHash(st, st.from + '-' + st.to + '-xfer') + '">乗り換える</a>';
-      html += '</div>' + navRow(st);
-    } else if (st.branch === 'exit') {
-      const legs = st.hist.concat([{ lid: DATA.lid, from: st.from, to: st.to }]);
-      let sum = '<h2>経路</h2>';
-      legs.forEach((leg, i) => {
-        if (i > 0) {
-          const prev = legs[i - 1];
-          sum += (nameIn(leg.lid, leg.from) === nameIn(prev.lid, prev.to))
-            ? '<p>↓ ' + nameIn(leg.lid, leg.from) + '駅で乗り換え</p>'
-            : '<p>↓ ' + nameIn(leg.lid, leg.from) + '駅へ徒歩乗り継ぎ</p>';
-        }
-        sum += '<p><strong>' + DATA.all[leg.lid].display + ' ' + nameIn(leg.lid, leg.from) + ' → ' + nameIn(leg.lid, leg.to) + '</strong><br>'
-          + '乗る: ' + boardingIn(leg.lid, leg.from, leg.to) + detailLinkIn(leg.lid, leg.from) + '<br>'
-          + '降りる: ' + boardingIn(leg.lid, leg.to, leg.from) + detailLinkIn(leg.lid, leg.to)
-          + (DATA.fleetByLine[leg.lid] ? '<br>フリースペース: ' + DATA.fleetByLine[leg.lid] : '') + '</p>';
-      });
-      const exits = d.exits.length ? d.exits.map(e => e + '番出入口').join('・') : 'エレベーター専用口のみ';
-      html += sum
-        + '<h2>' + nameOf(st.to) + '駅で出る</h2><p>改札内: ' + (d.ev_in.join('／') || 'なし') + '<br>'
-        + '改札外: ' + (d.ev_out.join('／') || 'なし') + '<br>'
-        + 'エレベーターのある出入口: ' + exits + '</p>'
-        + '<div class="step"><a href="' + restartHref(st) + '" onclick="return askReset()">最初からやり直す</a></div>';
+        + '<a href="' + curHash(st, st.from + '-' + st.to + '-exit') + '">出る</a>'
+        + '<a href="' + curHash(st, st.from + '-' + st.to + '-xfer') + '">乗り換える</a>'
+        + '</div>' + navRow(st);
+    } else if (!st.branch || st.branch === 'exit') {
+      html += exitHtml(st, d);
     } else {
       html += '<h2>' + nameOf(st.to) + '駅で乗り換える</h2>';
       const renderGroup = (title, texts, links) => {
