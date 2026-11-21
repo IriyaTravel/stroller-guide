@@ -54,15 +54,15 @@ function render() {
   const st = parseHash();
   let chips = '<p class="chips">';
   chips += '<a href="#">1. 乗る駅' + (st.from ? ': ' + nameOf(st.from) : '') + '</a>';
-  if (st.from) chips += '<a href="' + hashFor(st.from) + '">2. 経由駅' + (st.via ? ': ' + (st.via === 'none' ? '経由しない' : nameOf(st.via)) : '') + '</a>';
+  if (st.from) chips += '<a href="' + hashFor(st.from) + '">2. 乗換駅' + (st.via ? ': ' + (st.via === 'none' ? '乗り換えなし' : nameOf(st.via)) : '') + '</a>';
   if (st.via) chips += '<a href="' + hashFor(st.from, st.via) + '">3. 降りる駅' + (st.to ? ': ' + nameOf(st.to) : '') + '</a>';
   chips += '</p>';
   let html = chips;
   if (!st.from) {
     html += '<h2>1. 乗る駅をタップしてください</h2><div class="step">' + stationButtons([], c => hashFor(c)) + '</div>';
   } else if (!st.via) {
-    html += '<h2>2. 経由駅（乗り換え・途中下車）があればタップ</h2><div class="step">'
-      + '<a href="' + hashFor(st.from, 'none') + '">経由しない</a>'
+    html += '<h2>2. 乗換駅（乗り換え・途中下車）があればタップ</h2><div class="step">'
+      + '<a href="' + hashFor(st.from, 'none') + '">乗り換えなし</a>'
       + stationButtons([st.from], c => hashFor(st.from, c)) + '</div>';
   } else if (!st.to) {
     html += '<h2>3. 降りる駅をタップしてください</h2><div class="step">'
@@ -74,9 +74,9 @@ function render() {
     let lines = [];
     for (let i = 0; i + 1 < stops.length; i++) {
       const dir = directionOf(stops[i], stops[i + 1]);
-      const firstLabel = (i === 0) ? '乗る駅' : '経由駅';
+      const firstLabel = (i === 0) ? '乗る駅' : '乗換駅';
       lines.push(firstLabel + '（' + nameOf(stops[i]) + '）: ' + boardingText(stops[i], dir) + detailLink(stops[i]));
-      const lastLabel = (i + 2 === stops.length) ? '降りる駅' : '経由駅';
+      const lastLabel = (i + 2 === stops.length) ? '降りる駅' : '乗換駅';
       lines.push(lastLabel + '（' + nameOf(stops[i + 1]) + '）: 降りる: ' + boardingText(stops[i + 1], dir) + detailLink(stops[i + 1]));
     }
     html += '<h2>案内</h2><p>' + lines.join('<br>') + '</p>'
