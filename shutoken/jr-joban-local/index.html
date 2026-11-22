@@ -2,7 +2,7 @@
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>常磐線（各駅停車） ベビーカー乗り換え案内</title>
-<style>body{font-family:sans-serif;margin:1em;line-height:1.8;font-size:18px;max-width:640px}h1{font-size:1.25em}h2{font-size:1.05em;margin-top:1.2em}li a{padding:.35em 0;display:inline-block}.chip{display:inline-block;background:#9E9E9F;color:#fff;border-radius:4px;padding:0 .45em;margin-right:.4em;font-weight:bold}.step a,.chips a{display:block;border:1px solid #888;border-radius:8px;padding:.7em;margin:.4em 0;text-decoration:none;color:inherit}.chips a{display:inline-block;padding:.2em .6em;margin:.2em .2em .2em 0}.step a:active,.chips a:active{background:#eee}.dlink{display:inline-block;padding:.35em .2em}.navrow{display:flex;gap:.5em;margin-top:1em}.navrow a{flex:1;text-align:center;border:1px solid #888;border-radius:8px;padding:.6em;text-decoration:none;color:inherit}</style>
+<style>body{font-family:sans-serif;margin:1em;line-height:1.8;font-size:18px;max-width:640px}h1{font-size:1.25em}h2{font-size:1.05em;margin-top:1.2em}li a{padding:.35em 0;display:inline-block}.chip{display:inline-block;background:#9E9E9F;color:#fff;border-radius:4px;padding:0 .45em;margin-right:.4em;font-weight:bold}.step a,.chips a{display:block;border:1px solid #888;border-radius:8px;padding:.7em;margin:.4em 0;text-decoration:none;color:inherit}.chips a{display:inline-block;padding:.2em .6em;margin:.2em .2em .2em 0}.step a:active,.chips a:active{background:#eee}.dlink{display:inline-block;padding:.35em .2em}.navrow{display:flex;gap:.5em;margin-top:1em}.navrow a{flex:1;text-align:center;border:1px solid #888;border-radius:8px;padding:.6em;text-decoration:none;color:inherit}.copybtn{display:block;width:100%;font-size:1em;font-family:inherit;border:1px solid #888;border-radius:8px;padding:.6em;margin:.4em 0;background:#fff;color:inherit;cursor:pointer}.copybtn:active{background:#eee}</style>
 </head><body>
 <h1><span class="chip" style="background:#9E9E9F">JL</span>常磐線（各駅停車） ベビーカー案内</h1>
 <div id="flow"></div>
@@ -66,7 +66,7 @@ function boardingIn(lid, code, target) {
       if (term && (term.code === step || reach.has(term.code))) { p = pl; break; }
     }
   }
-  if (!p || p.elevator_near_car == null) return 'エレベーターに近い号車は未収集';
+  if (!p || p.elevator_near_car == null) return 'エレベーターに近い号車は不明';
   return p.direction_label + 'は' + p.elevator_near_car + (p.elevator_near_car_alt ? '・' + p.elevator_near_car_alt : '') + '号車付近' + (p.verification === 'single_source' ? '（確認中）' : '');
 }
 function boardingText(code, target) { return boardingIn(DATA.lid, code, target); }
@@ -80,7 +80,7 @@ function alightingIn(lid, code, from) {
   }
   if (away) return boardingIn(lid, code, away);
   const p = s.platforms.find(pl => { const t = sts.find(x => x.station_id === pl.direction.replace('toward_', '')); return t && t.code === code; }) || s.platforms[0];
-  if (!p || p.elevator_near_car == null) return 'エレベーターに近い号車は未収集';
+  if (!p || p.elevator_near_car == null) return 'エレベーターに近い号車は不明';
   return p.direction_label + 'は' + p.elevator_near_car + (p.elevator_near_car_alt ? '・' + p.elevator_near_car_alt : '') + '号車付近' + (p.verification === 'single_source' ? '（確認中）' : '');
 }
 function spaceText(lid, fromCode, toCode) {
@@ -183,6 +183,25 @@ function stationButtons(exclude, makeHref) {
     .map(ns => '<a href="' + makeHref(ns.code) + '">' + ns.code + ' ' + ns.name + '</a>').join('');
 }
 function askReset() { return confirm('最初から選び直しますか？'); }
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+function copyRouteUrl(btn) {
+  const url = location.href;
+  const done = () => {
+    btn.textContent = 'コピーしました';
+    setTimeout(() => { btn.textContent = 'URLをコピー'; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done).catch(() => { fallbackCopy(url); done(); });
+  } else { fallbackCopy(url); done(); }
+}
 function detailLink(code) {
   const ns = NS[code];
   return ' <a class="dlink" href="' + ns.station_id + '.html">駅の詳細</a>';
@@ -239,7 +258,7 @@ function exitHtml(st) {
       + '降りる: ' + alightingIn(leg.lid, leg.to, leg.from) + detailLinkIn(leg.lid, leg.to) + alightNote
       + '<br>フリースペース: ' + spaceText(leg.lid, leg.from, leg.to) + '</p>';
   });
-  return sum + navRow(st);
+  return sum + '<p><button type="button" class="copybtn" onclick="copyRouteUrl(this)">URLをコピー</button></p>' + navRow(st);
 }
 function saveLast(st) {
   if (!st.from || !st.to) return;
