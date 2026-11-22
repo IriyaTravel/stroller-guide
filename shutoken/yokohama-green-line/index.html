@@ -143,21 +143,40 @@ function histPrefix(st) {
   const legs = st.hist.concat([{ lid: DATA.lid, from: st.from, to: st.to }]);
   return legs.map(l => l.lid + ':' + l.from + '-' + l.to).join('>') + '>';
 }
+function parsePair(str, codes) {
+  // 'from' | 'from-to' | 'from-to-exit' | 'from-to-xfer'.
+  // Station codes may themselves contain '-' (e.g. code = station_id on JR rural
+  // lines), so never split on '-': match the longest known code at each position.
+  const sorted = codes.slice().sort((a, b) => b.length - a.length);
+  for (const f of sorted) {
+    if (str === f) return { from: f, to: null, branch: null };
+    if (str.startsWith(f + '-')) {
+      const rest = str.slice(f.length + 1);
+      for (const t of sorted) {
+        if (rest === t) return { from: f, to: t, branch: null };
+        if (rest === t + '-exit') return { from: f, to: t, branch: 'exit' };
+        if (rest === t + '-xfer') return { from: f, to: t, branch: 'xfer' };
+      }
+      return { from: f, to: null, branch: null };
+    }
+  }
+  return { from: null, to: null, branch: null };
+}
 function parseHash() {
   let raw = location.hash.replace(/^#/, '');
   try { raw = decodeURIComponent(raw); } catch (e) {}
   const segs = raw.split('>');
   const cur = segs[segs.length - 1];
   const hist = segs.slice(0, -1).map(sg => {
-    const m = sg.split(':'); const ft = (m[1] || '').split('-');
-    return { lid: m[0], from: ft[0], to: ft[1] };
+    const i = sg.indexOf(':');
+    const lid = i >= 0 ? sg.slice(0, i) : sg;
+    const rest = i >= 0 ? sg.slice(i + 1) : '';
+    const codes = DATA.all[lid] ? DATA.all[lid].stations.map(s => s.code) : [];
+    const p = parsePair(rest, codes);
+    return { lid: lid, from: p.from, to: p.to };
   }).filter(h => DATA.all[h.lid] && h.from && h.to);
-  const parts = cur.split('-').filter(x => x !== '');
-  const st = { from: null, to: null, branch: null, hist: hist };
-  if (parts[0] && CODES.includes(parts[0])) st.from = parts[0];
-  if (st.from && parts[1] && CODES.includes(parts[1])) st.to = parts[1];
-  if (st.from && st.to && (parts[2] === 'exit' || parts[2] === 'xfer')) st.branch = parts[2];
-  return st;
+  const p = parsePair(cur, CODES);
+  return { from: p.from, to: p.to, branch: p.branch, hist: hist };
 }
 function stationButtons(exclude, makeHref) {
   return DATA.network.stations.filter(ns => !exclude.includes(ns.code))
