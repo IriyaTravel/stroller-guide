@@ -197,20 +197,16 @@ function rateText(fleets) {
   if (!total) return '配置未確認';
   const allW = known.filter(v => v.space === 'all').reduce((a, v) => a + v.w, 0);
   if (allW === total) return '全号車にスペースあり';
-  const tier = r => r >= 0.85 ? 'ほぼ全て' : (r >= 0.5 ? '半分以上' : '一部');
   const carSet = new Set();
   known.forEach(v => (v.cars || []).forEach(c => carSet.add(c)));
   const rated = [...carSet].map(c => {
     const w = known.filter(v => v.space === 'all' || (v.cars || []).includes(c)).reduce((a, v) => a + v.w, 0);
     return { c: c, r: w / total };
-  }).filter(x => x.r > 0).sort((a, b) => b.r - a.r || a.c - b.c);
+  }).filter(x => x.r > 0).sort((a, b) => a.c - b.c);
   if (!rated.length) return 'スペースなし';
-  const byTier = {};
-  rated.forEach(x => { (byTier[tier(x.r)] = byTier[tier(x.r)] || []).push(x.c); });
-  let parts = ['ほぼ全て', '半分以上', '一部'].filter(t => byTier[t])
-    .map(t => byTier[t].sort((a, b) => a - b).join('・') + '号車付近（' + t + '）');
+  let parts = [rated.map(x => x.c).join('・') + '号車付近'];
   const allR = allW / total;
-  if (allR >= 0.3) parts.push('全号車にスペースのある車両も' + (allR >= 0.5 ? '半分以上' : '一部'));
+  if (allR >= 0.3) parts.push('全号車にスペースのある車両もあり');
   return parts.join('／');
 }
 function spaceText(lid, fromCode, toCode) {
