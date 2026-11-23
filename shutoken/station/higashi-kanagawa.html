@@ -3,14 +3,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="../../favicon.png">
 <title>東神奈川 ベビーカー案内</title>
-<style>body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;margin:1em;line-height:1.7;font-size:18px;max-width:640px;background:#faf6ec;color:#1c1a16}h1{font-size:1.3em;font-weight:800;margin:.4em 0 .6em}.signband{background:#1c1a16;color:#faf6ec;margin:-18px -18px 1em;padding:.6em 18px;font-size:1.35em;font-weight:800}h1.sttitle{font-size:2em;margin:.2em 0 .4em;padding-bottom:.12em;border-bottom:5px solid #00B2E5}h2.pagetitle{font-size:1.5em;margin:.1em 0 .7em;padding-bottom:.15em;border-bottom:4px solid #00B2E5}h2{font-size:1.2em;font-weight:800;margin:1.3em 0 .5em;padding-bottom:.2em;border-bottom:3px solid #00B2E5}ul{list-style:none;padding:0;margin:.4em 0}a{color:inherit}.back a{font-weight:700;text-decoration:none}.chip{display:inline-block;background:#00B2E5;color:#fff;border-radius:3px;padding:0 .3em;margin-right:.4em;font-weight:800;min-width:2.3em;height:1.6em;line-height:1.6em;text-align:center;box-sizing:border-box;vertical-align:-.32em}.chip-empty{background:transparent;border:2px solid}.rows a{display:block;position:relative;border:2px solid #1c1a16;border-radius:2px;padding:.65em 2em .65em .7em;margin:.45em 0;text-decoration:none;color:inherit;background:#fff;font-weight:700}.rows a::after{content:"\2192";position:absolute;right:.7em;top:50%;transform:translateY(-50%);font-weight:800}.rows a:active{background:#efe7d2}.plats li{border-bottom:1px solid #ddd3ba;padding:.55em .1em}.plats strong{font-size:1.05em}</style>
+<style>body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;margin:1em;line-height:1.7;font-size:18px;max-width:640px;background:#faf6ec;color:#1c1a16}h1{font-size:1.3em;font-weight:800;margin:.4em 0 .6em}.signband{background:#1c1a16;color:#faf6ec;margin:-18px -18px 1em;padding:.6em 18px;font-size:1.35em;font-weight:800}h1.sttitle{font-size:2em;margin:.2em 0 .4em;padding-bottom:.12em;border-bottom:5px solid #00B2E5}h2.pagetitle{font-size:1.5em;margin:.1em 0 .7em;padding-bottom:.15em;border-bottom:4px solid #00B2E5}h2{font-size:1.2em;font-weight:800;margin:1.3em 0 .5em;padding-bottom:.2em;border-bottom:3px solid #00B2E5}ul{list-style:none;padding:0;margin:.4em 0}a{color:inherit}.back a{font-weight:700;text-decoration:none}.chip{display:inline-block;background:#00B2E5;color:#fff;border-radius:3px;padding:0 .3em;margin-right:.4em;font-weight:800;min-width:2.3em;height:1.6em;line-height:1.6em;text-align:center;box-sizing:border-box;vertical-align:-.32em}.chip-empty{background:transparent;border:2px solid}.rows a{display:block;position:relative;border:2px solid #1c1a16;border-radius:2px;padding:.65em 2em .65em .7em;margin:.45em 0;text-decoration:none;color:inherit;background:#fff;font-weight:700}.rows a::after{content:"\2192";position:absolute;right:.7em;top:50%;transform:translateY(-50%);font-weight:800}.rows a:active{background:#efe7d2}.plats li{border-bottom:1px solid #ddd3ba;padding:.55em .1em}.plats strong{font-size:1.05em}.signband{display:flex;align-items:center}.band-nav{margin-left:auto;display:flex;gap:.9em;align-items:center;font-size:.5em;font-weight:700}.band-nav a{color:#faf6ec;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:.3em 0}.band-contact{font:inherit;color:#faf6ec;background:none;border:none;padding:.3em 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}#contactModal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:200;padding:16px;box-sizing:border-box}#contactModal.open{display:flex}#contactModal .cm-box{background:#fff;border:2px solid #1c1a16;border-radius:2px;max-width:480px;width:100%;padding:20px;box-sizing:border-box}#contactModal h2{font-size:1em;margin:0 0 6px;padding:0;border-bottom:none}#contactModal p{font-size:.8em;margin:0 0 12px;line-height:1.6}#contactModal textarea{width:100%;min-height:140px;font:inherit;font-size:16px;padding:10px;border:2px solid #1c1a16;border-radius:2px;box-sizing:border-box;background:#fff}#contactModal .cm-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}#contactModal .cm-actions button{font:inherit;font-size:.85em;font-weight:700;padding:8px 16px;border-radius:2px;border:2px solid #1c1a16;background:#fff;color:#1c1a16;cursor:pointer}#contactModal .cm-actions .cm-send{background:#1c1a16;color:#faf6ec}.signband>span:first-child{white-space:nowrap}.band-nav{flex:none}@media (max-width:480px){.signband{font-size:1.15em}}</style>
 </head><body>
 <p class="back"><a href="../index.html">← 首都圏の路線一覧</a></p>
-<p class="signband">ベビーカー乗り換え案内</p>
+<p class="signband"><span>ベビーカー乗り換え案内</span><span class="band-nav"><a href="../../index.html">トップへ</a><button type="button" class="band-contact" onclick="document.getElementById('contactModal').classList.add('open')">問い合わせ</button></span></p>
 <h1 class="sttitle">東神奈川</h1>
 <h2>この駅から出発する</h2>
-<ul class="rows"><li><a href="../jr-keihin-tohoku/index.html#JK13"><span class="chip" style="background:#00B2E5;color:#fff">JK</span>京浜東北線で出発する</a></li><li><a href="../jr-yokohama/index.html#JH13"><span class="chip" style="background:#80C241;color:#1c1a16">JH</span>横浜線で出発する</a></li></ul>
+<ul class="rows"><li><a href="../jr-keihin-tohoku/index.html#JK13"><span class="chip" style="background:#00B2E5;color:#fff">JK</span>JR京浜東北線で出発する</a></li><li><a href="../jr-yokohama/index.html#JH13"><span class="chip" style="background:#80C241;color:#1c1a16">JH</span>JR横浜線で出発する</a></li></ul>
 <h2>この駅で乗る・降りる</h2>
 <p>エレベーターに近い号車（方面ごと）</p>
-<ul class="plats"><li>京浜東北線：大船方面は不明</li><li>京浜東北線：大宮方面は不明</li><li>横浜線：八王子方面は不明</li><li>横浜線：東神奈川方面は不明</li></ul>
+<ul class="plats"><li>JR京浜東北線：大船方面は不明</li><li>JR京浜東北線：大宮方面は不明</li><li>JR横浜線：八王子方面は不明</li><li>JR横浜線：東神奈川方面は不明</li></ul>
+<div id="contactModal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+  <div class="cm-box">
+    <h2 id="cmTitle">お問い合わせ</h2>
+    <p>駅や路線の情報の誤りのご報告などをお寄せください。</p>
+    <form action="https://formsubmit.co/5e9386a7bf9e19951e6079b90a3169f7" method="POST">
+      <textarea name="message" required placeholder="内容を入力してください" aria-label="お問い合わせ内容"></textarea>
+      <input type="hidden" name="_subject" value="ベビーカー乗り換え案内へのお問い合わせ">
+      <input type="hidden" name="_next" value="https://stroller-guide.pages.dev/">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="text" name="_honey" style="display:none">
+      <div class="cm-actions">
+        <button type="button" id="contactCancel">キャンセル</button>
+        <button type="submit" class="cm-send">送信する</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+document.getElementById('contactCancel').addEventListener('click', function(){ document.getElementById('contactModal').classList.remove('open'); });
+document.getElementById('contactModal').addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });
+</script>
+
 </body></html>
