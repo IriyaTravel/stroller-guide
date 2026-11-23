@@ -144,10 +144,14 @@ function alightInfo(lid, code, from) {
   return { dir: p.direction_label, car: carText(p), chk: p.verification === 'single_source', mainCar: p.elevator_near_car, eCars };
 }
 function alightLines(lid, code, from) {
+  // When the elevator-near car at the alighting station is unknown, the
+  // 降車時 line is omitted entirely (user decision 2026-11-23, unified
+  // with the 乗車時 line). A transfer best-elevator note, when present,
+  // is separate information and is still shown by the caller.
   const info = alightInfo(lid, code, from);
-  const label = DATA.all[lid].tlabel + (info && info.dir ? '・' + info.dir : '');
-  const body = (!info || info.car == null) ? 'エレベーターに近い号車は不明'
-    : 'エレベーターは' + info.car + (info.chk ? '（確認中）' : '');
+  if (!info || info.car == null) return null;
+  const label = DATA.all[lid].tlabel + (info.dir ? '・' + info.dir : '');
+  const body = 'エレベーターは' + info.car + (info.chk ? '（確認中）' : '');
   return '降車時：' + label + '<br>　' + body;
 }
 function boardLines(ride) {
@@ -485,11 +489,17 @@ function exitHtml(st) {
         const xc1 = xferCar(last.lid, last.to, last.from, nextFirst.lid);
         if (xc1 != null) alightNote = '<br>　（' + DATA.all[nextFirst.lid].tlabel + 'への乗り換えは' + xc1 + '号車付近のエレベーター）';
       }
-      sum += '<p class="stblk"><span class="stname">' + nameIn(last.lid, last.to) + '駅</span>' + detailLinkIn(last.lid, last.to) + connSuffix + '<br>'
-        + alightLines(last.lid, last.to, last.from) + alightNote + '</p>';
+      const al = alightLines(last.lid, last.to, last.from);
+      // alightNote starts with '<br>'; when the 降車時 line is omitted,
+      // drop that leading break so the note sits directly under the
+      // station name instead of leaving a blank line.
+      let alightHtml = '';
+      if (al) alightHtml = '<br>' + al + alightNote;
+      else if (alightNote) alightHtml = '<br>' + alightNote.slice(4);
+      sum += '<p class="stblk"><span class="stname">' + nameIn(last.lid, last.to) + '駅</span>' + detailLinkIn(last.lid, last.to) + connSuffix + alightHtml + '</p>';
     } else {
-      sum += '<p class="stblk"><span class="stname">' + nameIn(last.lid, last.to) + '駅</span>' + detailLinkIn(last.lid, last.to) + '<br>'
-        + alightLines(last.lid, last.to, last.from) + '</p>';
+      const al = alightLines(last.lid, last.to, last.from);
+      sum += '<p class="stblk"><span class="stname">' + nameIn(last.lid, last.to) + '駅</span>' + detailLinkIn(last.lid, last.to) + (al ? '<br>' + al : '') + '</p>';
     }
   });
   return sum + '<p><button type="button" class="copybtn" onclick="copyRouteUrl(this)">URLをコピー</button></p>' + navRow(st);
