@@ -146,17 +146,21 @@ function alightLines(lid, code, from) {
 }
 function boardLines(ride) {
   // the car shown is the one near the elevator at the ride's alighting station
-  // (the same number that appears in that station's 降車時 lines)
+  // (the same number that appears in that station's 降車時 lines).
+  // When that car is unknown, the 乗車時 line is omitted entirely (user decision).
   const first = ride.segs[0], last = ride.segs[ride.segs.length - 1];
   const info = alightInfo(last.lid, last.to, last.from);
-  const label = DATA.all[first.lid].tlabel + (info && info.dir ? '・' + info.dir : '');
-  const body = (!info || info.car == null) ? '号車は不明'
-    : info.car + 'から乗る' + (info.chk ? '（確認中）' : '');
-  return '乗車時：' + label + '<br>　' + body;
+  if (!info || info.car == null) return null;
+  const label = DATA.all[first.lid].tlabel + (info.dir ? '・' + info.dir : '');
+  return '乗車時：' + label + '<br>　' + info.car + 'から乗る' + (info.chk ? '（確認中）' : '');
 }
 function spaceHtml(ride) {
+  // label on its own line, content on the next line (one paragraph block).
+  // When the layout is unconfirmed (配置未確認), the paragraph is omitted
+  // entirely (user decision); スペースなし / 全号車にスペースあり still show.
   const t = spaceTextRide(ride.segs);
-  return t.length > 12 ? 'フリースペース：<br>　' + t : 'フリースペース：' + t;
+  if (t === '配置未確認') return null;
+  return 'フリースペース<br>　' + t;
 }
 function towardKey(p, s) {
   if (!p) return null;
@@ -190,6 +194,12 @@ function segFleets(lid, fromCode, toCode) {
   const hi = Math.max(SD.index[sf.station_id], SD.index[st.station_id]);
   return SD.vehicles.filter(v => v.w != null && (!v.seg || (lo >= v.seg[0] && hi <= v.seg[1])));
 }
+function wariLabel(k) {
+  // k is the formation share rounded to tenths (0-10)
+  if (k >= 10) return '全て';
+  if (k === 5) return '半分';
+  return k + '割';
+}
 function rateText(fleets) {
   const known = fleets.filter(v => v.space !== 'unknown');
   if (!known.length) return '配置未確認';
@@ -199,15 +209,26 @@ function rateText(fleets) {
   if (allW === total) return '全号車にスペースあり';
   const carSet = new Set();
   known.forEach(v => (v.cars || []).forEach(c => carSet.add(c)));
-  const rated = [...carSet].map(c => {
+  // group cars by their formation share, rounded to tenths (割)
+  const groups = new Map();
+  [...carSet].forEach(c => {
     const w = known.filter(v => v.space === 'all' || (v.cars || []).includes(c)).reduce((a, v) => a + v.w, 0);
-    return { c: c, r: w / total };
-  }).filter(x => x.r > 0).sort((a, b) => a.c - b.c);
-  if (!rated.length) return 'スペースなし';
-  let parts = [rated.map(x => x.c).join('・') + '号車付近'];
+    const k = Math.round((w / total) * 10);
+    if (k < 1) return; // negligible share: not listed
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(c);
+  });
+  const parts = [...groups.entries()].sort((a, b) => b[0] - a[0])
+    .map(([k, cs]) => cs.sort((a, b) => a - b).join('・') + '号車付近（電車の' + wariLabel(k) + '）');
+  // all-car-space fleets are not covered by the per-car groups (their cars are
+  // not enumerated), so they are appended as their own group when their share
+  // is material (same 0.3 threshold as the former note)
   const allR = allW / total;
-  if (allR >= 0.3) parts.push('全号車にスペースのある車両もあり');
-  return parts.join('／');
+  if (allW > 0 && allR >= 0.3) {
+    parts.push('全号車にスペースあり（電車の' + wariLabel(Math.round(allR * 10)) + '）');
+  }
+  if (!parts.length) return 'スペースなし';
+  return parts.join('、');
 }
 function spaceText(lid, fromCode, toCode) {
   const f = segFleets(lid, fromCode, toCode);
@@ -373,9 +394,11 @@ function exitHtml(st) {
       }
     }
     const lc = DATA.all[first.lid].color || '#1c1a16';
+    const bl = boardLines(ride);
+    const sp = spaceHtml(ride);
     sum += '<p class="lineband" style="border-left-color:' + lc + '">↓ ' + DATA.all[first.lid].tlabel + thruNote + '</p>'
-      + '<p class="board">' + boardLines(ride) + boardNote + '</p>'
-      + '<p class="spc">' + spaceHtml(ride) + '</p>';
+      + ((bl || boardNote) ? '<p class="board">' + (bl || '') + boardNote + '</p>' : '')
+      + (sp ? '<p class="spc">' + sp + '</p>' : '');
     if (ri < rides.length - 1) {
       const nextFirst = rides[ri + 1].segs[0];
       const sameName = nameIn(nextFirst.lid, nextFirst.from) === nameIn(last.lid, last.to);
