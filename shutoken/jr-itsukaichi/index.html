@@ -152,7 +152,7 @@ function boardLines(ride) {
   const info = alightInfo(last.lid, last.to, last.from);
   if (!info || info.car == null) return null;
   const label = DATA.all[first.lid].tlabel + (info.dir ? '・' + info.dir : '');
-  return '乗車時：' + label + '<br>　' + info.car + 'から乗る' + (info.chk ? '（確認中）' : '');
+  return '乗車時：' + label + '<br>　' + info.car + 'が降車時に便利' + (info.chk ? '（確認中）' : '');
 }
 function spaceHtml(ride) {
   // label on its own line, content on the next line (one paragraph block).
